@@ -9,16 +9,25 @@ import App from './app/App.jsx'
 import './assets/fontawesome';
 import '@radix-ui/themes/styles.css';
 
+const useMockAuth = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
+
 const render = () => {
+  const AuthenticatorWrapper = ({ children }) => {
+    if (useMockAuth) {
+      return children;
+    }
+    return <Authenticator.Provider>{children}</Authenticator.Provider>;
+  };
+
   ReactDOM.render(
     <React.StrictMode>
       <Provider store={store}>
         <ConnectedRouter history={history}>
-          <Authenticator.Provider>
+          <AuthenticatorWrapper>
             <Theme style={{ zIndex: 'auto' }}>
               <App />
             </Theme>
-          </Authenticator.Provider>
+          </AuthenticatorWrapper>
         </ConnectedRouter>
       </Provider>
     </React.StrictMode>,

@@ -9,7 +9,6 @@ import CaseStudiesPage from '../pages/CaseStudiesPage';
 import AppPage from '../pages/AppPage';
 import CreateProjectPage from '../pages/CreateProjectPage';
 import { Amplify } from 'aws-amplify';
-import { useAuthenticator } from '@aws-amplify/ui-react';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import * as Toast from '@radix-ui/react-toast';
 import { initTracking } from '../features/tracking/trackingSlice';
@@ -20,8 +19,13 @@ import logo from '../assets/animl-logo.svg';
 import { IN_MAINTENANCE_MODE, GA_CONFIG, AWS_AUTH_CONFIG, globalBreakpoints } from '../config';
 import { setGlobalBreakpoint } from '../features/projects/projectsSlice.js';
 import useBreakpoints from '../hooks/useBreakpoints.js';
+import { useAuth } from '../hooks/useAuth.js';
 
-Amplify.configure(AWS_AUTH_CONFIG);
+// Configure Amplify only if not using mock auth
+const useMockAuth = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
+if (!useMockAuth) {
+  Amplify.configure(AWS_AUTH_CONFIG);
+}
 
 const AppContainer = styled('div', {
   position: 'relative',
@@ -74,8 +78,12 @@ const App = () => {
     }
   }, [router]);
 
+  // Use the centralized auth hook
+  const useAuthenticator = useAuth();
+
   const { authStatus } = useAuthenticator((context) => [context.authStatus]);
   const { user } = useAuthenticator((context) => [context.user]);
+
   useEffect(() => {
     const payload = { authStatus };
     if (user && authStatus === 'authenticated') {
@@ -85,6 +93,20 @@ const App = () => {
     }
     dispatch(userAuthStateChanged(payload));
   }, [user, authStatus, dispatch]);
+
+  // Initialize mock user data immediately when using mock auth
+  const useMockAuth = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
+  useEffect(() => {
+    if (useMockAuth) {
+      // Dispatch mock user data immediately
+      const mockPayload = {
+        authStatus: 'authenticated',
+        username: 'test-user',
+        groups: ['animl/demo-project/member', 'beta_access'],
+      };
+      dispatch(userAuthStateChanged(mockPayload));
+    }
+  }, [dispatch, useMockAuth]);
 
   // // set auth state
   // // TODO: move to to AppPage?

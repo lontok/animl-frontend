@@ -1,7 +1,7 @@
 import React from 'react';
 import { styled } from '../../theme/stitches.config.js';
 import { Auth } from 'aws-amplify';
-import { Authenticator, useAuthenticator } from '@aws-amplify/ui-react';
+import { Authenticator } from '@aws-amplify/ui-react';
 import { indigo } from '@radix-ui/colors';
 import Button from '../../components/Button.jsx';
 // eslint-disable-next-line import/no-unresolved
@@ -9,6 +9,7 @@ import '@aws-amplify/ui-react/styles.css';
 import { useSelector } from 'react-redux';
 import { selectUserUsername } from './authSlice.js';
 import Callout from '../../components/Callout.jsx';
+import { useAuth } from '../../hooks/useAuth.js';
 
 const LoginScreen = styled('div', {
   display: 'flex',
@@ -179,8 +180,22 @@ const StyledButton = styled(Button, {
 });
 
 const LoginForm = () => {
+  const useAuthenticator = useAuth();
   const { route, toSignIn } = useAuthenticator((context) => [context.route]);
   const userName = useSelector(selectUserUsername);
+
+  // Check if we're using mock auth
+  const useMockAuth = import.meta.env.VITE_USE_MOCK_AUTH === 'true';
+
+  // If using mock auth, just show a simple message since user should already be authenticated
+  if (useMockAuth) {
+    return (
+      <LoginScreen>
+        <Header css={{ '@bp3': { fontSize: '64px' } }}>Mock Authentication Active</Header>
+        <Subheader>You are logged in as test-user. Redirecting to app...</Subheader>
+      </LoginScreen>
+    );
+  }
 
   const services = {
     async handleSignIn(input) {

@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { selectUserUsername, selectUserAuthStatus } from '../features/auth/authSlice.js';
 import { selectRouterLocation } from '../features/images/imagesSlice.js';
 import ProjectAndViewNav from '../features/projects/ProjectAndViewNav.jsx';
-import { useAuthenticator } from '@aws-amplify/ui-react';
+import { useAuth } from '../hooks/useAuth.js';
 import logo from '../assets/animl-logo.svg';
 import logoFox from '../assets/animl-logo-fox.svg';
 import Button from './Button.jsx';
@@ -75,6 +75,7 @@ const StyledNav = styled('nav', {
 });
 
 const NavBar = () => {
+  const useAuthenticator = useAuth();
   const { signOut } = useAuthenticator((context) => [context.user]);
   const authStatus = useSelector(selectUserAuthStatus);
   const user = useSelector(selectUserUsername);
